@@ -4,27 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f0f0e">
-<title>Лимит — трекер трат</title>
-<link rel="manifest" href="data:application/json,%7B%22name%22%3A%22%D0%9B%D0%B8%D0%BC%D0%B8%D1%82%22%2C%22short_name%22%3A%22%D0%9B%D0%B8%D0%BC%D0%B8%D1%82%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23111%22%2C%22theme_color%22%3A%22%23111%22%7D">
+<title>Qalta — трекер трат</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
   :root{
     --bg:#f7f6f2; --card:#ffffff; --ink:#181816; --ink2:#6b6a63; --ink3:#9b9a91;
     --line:#e7e5dd; --accent:#1f8f6a; --amber:#b8791a; --red:#cf5330;
-    --shadow:0 1px 2px rgba(0,0,0,.04);
-    --pool-bg:#eeece4;
+    --brand:#b8791a; --shadow:0 1px 2px rgba(0,0,0,.04); --pool-bg:#eeece4;
   }
   @media (prefers-color-scheme: dark){
     :root{ --bg:#0f0f0e; --card:#1b1b19; --ink:#f2f1ea; --ink2:#a3a299; --ink3:#6d6c64;
-      --line:#2b2b28; --accent:#3bbd8f; --amber:#e0a13c; --red:#e5744a; --shadow:none; --pool-bg:#242320; }
+      --line:#2b2b28; --accent:#3bbd8f; --amber:#e0a13c; --red:#e5744a; --brand:#e0a13c; --shadow:none; --pool-bg:#242320; }
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{background:var(--bg);color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
   body{max-width:460px;margin:0 auto;padding:20px 16px calc(24px + env(safe-area-inset-bottom));min-height:100vh}
-  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-  .date{font-size:14px;color:var(--ink2);text-transform:capitalize}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+  .brand{font-size:20px;font-weight:600;letter-spacing:-.01em}
+  .date{font-size:13px;color:var(--ink2);text-transform:capitalize;margin-top:2px}
   .gear{background:none;border:none;color:var(--ink3);font-size:20px;cursor:pointer;padding:6px;line-height:1}
+  .tagline{text-align:center;font-size:12.5px;color:var(--brand);margin:0 0 16px;font-style:italic}
 
   .hero{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px 22px;box-shadow:var(--shadow);text-align:center;margin-bottom:14px}
   .hero .lbl{font-size:13px;color:var(--ink2);letter-spacing:.02em}
@@ -36,8 +39,9 @@
   .pool b{color:var(--ink);font-weight:600}
 
   .week{display:flex;gap:6px;margin:16px 2px 20px}
-  .day{flex:1;text-align:center}
-  .day .bar{height:34px;border-radius:7px;background:var(--pool-bg);position:relative;overflow:hidden;display:flex;align-items:flex-end}
+  .day{flex:1;text-align:center;background:none;border:none;padding:0;cursor:pointer}
+  .day .bar{height:34px;border-radius:7px;background:var(--pool-bg);position:relative;overflow:hidden;display:flex;align-items:flex-end;transition:box-shadow .15s}
+  .day.sel .bar{box-shadow:0 0 0 2px var(--ink)}
   .day .bin{width:100%;border-radius:7px 7px 0 0;transition:height .3s}
   .day .dl{font-size:10px;color:var(--ink3);margin-top:5px}
   .day.today .dl{color:var(--ink);font-weight:600}
@@ -45,6 +49,8 @@
   .add{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);margin-bottom:18px}
   .amt{width:100%;border:none;background:transparent;color:var(--ink);font-size:34px;font-weight:600;text-align:center;letter-spacing:-.01em;outline:none;font-variant-numeric:tabular-nums}
   .amt::placeholder{color:var(--ink3)}
+  .dayrow{display:flex;align-items:center;justify-content:center;gap:8px;margin:10px 0 2px;font-size:13px;color:var(--ink2)}
+  .dayrow input[type=date]{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:9px;padding:6px 9px;font-size:13px;font-family:inherit}
   .cats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0}
   .cat{border:1px solid var(--line);background:transparent;color:var(--ink2);border-radius:12px;padding:9px 4px;font-size:12.5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;transition:.15s}
   .cat .dot{width:9px;height:9px;border-radius:99px}
@@ -85,9 +91,11 @@
 </head>
 <body>
   <div class="top">
-    <div class="date" id="date"></div>
+    <div><div class="brand">qalta</div><div class="date" id="date"></div></div>
     <button class="gear" id="gear" aria-label="Настройки">⚙</button>
   </div>
+
+  <div class="tagline">Ақшаң болса қалтаңда, талтаңда да талтаңда</div>
 
   <div class="hero">
     <div class="lbl" id="heroLbl">Осталось сегодня</div>
@@ -101,6 +109,7 @@
 
   <div class="add">
     <input class="amt" id="amt" type="number" inputmode="numeric" placeholder="0" min="0">
+    <div class="dayrow">День траты: <input type="date" id="dateSel"></div>
     <div class="cats" id="cats"></div>
     <button class="addbtn" id="addbtn" disabled>Добавить трату</button>
   </div>
@@ -130,73 +139,86 @@
     {id:"trans", name:"Транспорт",color:"#3a72c4"},
     {id:"other", name:"Прочее",   color:"#8a8880"}
   ];
-  var mem={}; // fallback if localStorage blocked
+  var mem={};
   function load(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return k in mem?mem[k]:d;}}
   function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){mem[k]=v;}}
 
   var S=load("lm_settings",{limit:3000,roll:true});
-  var E=load("lm_exp",[]); // {id,ts,amount,cat}
-  var sel=null;
+  var E=load("lm_exp",[]);
+  var sel=null, view=null;
 
   var fmt=new Intl.NumberFormat("ru-RU");
   function money(n){return fmt.format(Math.round(n))+" ₸";}
   function dkey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
   function today(){return new Date();}
   function weekStart(d){var x=new Date(d);var wd=(x.getDay()+6)%7;x.setDate(x.getDate()-wd);x.setHours(0,0,0,0);return x;}
-
+  function dispDate(key){return new Date(key+"T00:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long"});}
   function spentOn(key){var s=0;E.forEach(function(e){if(dkey(new Date(e.ts))===key)s+=e.amount;});return s;}
   function state(rem){ if(rem<0)return"red"; if(rem<=S.limit*0.2)return"amber"; return"accent"; }
   function col(st){return st==="red"?"var(--red)":st==="amber"?"var(--amber)":"var(--accent)";}
 
   function render(){
     var now=today(), tk=dkey(now);
+    if(!view) view=tk;
+    if(view>tk) view=tk;
     document.getElementById("date").textContent=now.toLocaleDateString("ru-RU",{weekday:"long",day:"numeric",month:"long"});
 
-    // week pool
     var ws=weekStart(now), priorBudget=0, priorSpent=0;
     for(var i=0;i<7;i++){var d=new Date(ws);d.setDate(ws.getDate()+i);var k=dkey(d);
       if(d<new Date(tk)){priorBudget+=S.limit;priorSpent+=spentOn(k);} }
-    var cushion=priorBudget-priorSpent; // + ahead, - behind
-    var tSpent=spentOn(tk);
-    var effLimit=S.roll?S.limit+cushion:S.limit;
-    var rem=effLimit-tSpent;
+    var cushion=priorBudget-priorSpent;
+
+    var isToday=view===tk;
+    var vSpent=spentOn(view);
+    var effLimit=(isToday&&S.roll)?S.limit+cushion:S.limit;
+    var rem=effLimit-vSpent;
     var st=state(rem);
 
     var big=document.getElementById("heroBig");
     big.textContent=money(rem); big.style.color=col(st);
-    document.getElementById("heroLbl").textContent=rem<0?"Перерасход сегодня":"Осталось сегодня";
-    document.getElementById("heroOf").textContent="из "+money(effLimit)+(S.roll&&cushion!==0?(cushion>0?" (с запасом +"+money(cushion)+")":" (минус "+money(-cushion)+" за неделю)"):"");
-    var pct=Math.max(0,Math.min(100, effLimit>0?(tSpent/effLimit*100):100));
+    document.getElementById("heroLbl").textContent=
+      isToday ? (rem<0?"Перерасход сегодня":"Осталось сегодня")
+              : (rem<0?"Перерасход · "+dispDate(view):"Осталось · "+dispDate(view));
+    document.getElementById("heroOf").textContent="из "+money(effLimit)+
+      ((isToday&&S.roll&&cushion!==0)?(cushion>0?" (с запасом +"+money(cushion)+")":" (минус "+money(-cushion)+" за неделю)"):"");
+    var pct=Math.max(0,Math.min(100, effLimit>0?(vSpent/effLimit*100):100));
     var f=document.getElementById("fill"); f.style.width=pct+"%"; f.style.background=col(st);
 
+    var wBudget=S.limit*7, wSpent=0;
+    for(var wi=0;wi<7;wi++){var wd=new Date(ws);wd.setDate(ws.getDate()+wi);wSpent+=spentOn(dkey(wd));}
+    var wLeft=wBudget-wSpent;
     var poolEl=document.getElementById("pool");
-    if(S.roll){ poolEl.innerHTML = cushion>=0 ? "Запас недели: <b>+"+money(cushion)+"</b> — дешёвые дни дают подушку" : "Отставание за неделю: <b>−"+money(-cushion)+"</b>"; }
-    else { poolEl.innerHTML="Строгий дневной лимит без переноса"; }
+    if(!isToday){ poolEl.innerHTML="Прошлый день — можно вносить траты задним числом"; }
+    else { poolEl.innerHTML = "Неделя: осталось <b>"+money(wLeft)+"</b> из "+money(wBudget); }
 
-    // week strip
     var wk=document.getElementById("week"); wk.innerHTML="";
     var names=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
     for(var j=0;j<7;j++){
-      var d2=new Date(ws);d2.setDate(ws.getDate()+j);var k2=dkey(d2);
-      var sp=spentOn(k2), isToday=k2===tk, future=d2>new Date(tk);
-      var ratio=Math.min(1.4, S.limit>0?sp/S.limit:0);
-      var h=Math.min(100,ratio*100);
-      var barCol= sp>S.limit?"var(--red)": sp>S.limit*0.8?"var(--amber)":"var(--accent)";
-      if(future){barCol="var(--pool-bg)";h=0;}
-      var el=document.createElement("div");
-      el.className="day"+(isToday?" today":"");
-      el.innerHTML='<div class="bar"><div class="bin" style="height:'+h+'%;background:'+barCol+'"></div></div><div class="dl">'+names[j]+'</div>';
-      wk.appendChild(el);
+      (function(){
+        var d2=new Date(ws);d2.setDate(ws.getDate()+j);var k2=dkey(d2);
+        var sp=spentOn(k2), isT=k2===tk, future=d2>new Date(tk), isSel=k2===view;
+        var ratio=Math.min(1.4, S.limit>0?sp/S.limit:0), h=Math.min(100,ratio*100);
+        var barCol= sp>S.limit?"var(--red)": sp>S.limit*0.8?"var(--amber)":"var(--accent)";
+        if(future){barCol="var(--pool-bg)";h=0;}
+        var el=document.createElement("button");
+        el.className="day"+(isT?" today":"")+(isSel?" sel":"");
+        el.innerHTML='<div class="bar"><div class="bin" style="height:'+h+'%;background:'+barCol+'"></div></div><div class="dl">'+names[j]+'</div>';
+        if(!future){ el.onclick=function(){ view=k2; render(); }; } else { el.disabled=true; el.style.opacity=".4"; }
+        wk.appendChild(el);
+      })();
     }
 
-    // today's rows
+    document.getElementById("dateSel").value=view;
+    document.getElementById("dateSel").max=tk;
+
     var rows=document.getElementById("rows");
-    var todayE=E.filter(function(e){return dkey(new Date(e.ts))===tk;}).sort(function(a,b){return b.ts-a.ts;});
-    document.getElementById("listSum").textContent=todayE.length?money(tSpent):"";
-    if(!todayE.length){ rows.innerHTML='<div class="empty">Пока нет трат. Первая покупка дня — выше.</div>'; }
+    var vE=E.filter(function(e){return dkey(new Date(e.ts))===view;}).sort(function(a,b){return b.ts-a.ts;});
+    document.getElementById("listTitle").textContent=isToday?"Сегодня":dispDate(view);
+    document.getElementById("listSum").textContent=vE.length?money(vSpent):"";
+    if(!vE.length){ rows.innerHTML='<div class="empty">'+(isToday?"Пока нет трат. Первая покупка дня — выше.":"В этот день трат нет. Можно добавить выше.")+'</div>'; }
     else{
       rows.innerHTML="";
-      todayE.forEach(function(e){
+      vE.forEach(function(e){
         var c=CATS.find(function(x){return x.id===e.cat;})||CATS[3];
         var t=new Date(e.ts).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
         var r=document.createElement("div"); r.className="row";
@@ -206,7 +228,6 @@
       });
     }
 
-    // month summary
     var mk=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0");
     var monthE=E.filter(function(e){return dkey(new Date(e.ts)).slice(0,7)===mk;});
     var mTotal=monthE.reduce(function(s,e){return s+e.amount;},0);
@@ -220,7 +241,6 @@
       '<div class="mc"><div class="mv" style="font-size:15px">'+topName+'</div><div class="ml">топ категория</div></div>';
   }
 
-  // category chips
   var catsWrap=document.getElementById("cats");
   CATS.forEach(function(c){
     var b=document.createElement("button"); b.className="cat"; b.dataset.id=c.id;
@@ -228,18 +248,20 @@
     b.onclick=function(){ sel=c.id; document.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); checkAdd(); };
     catsWrap.appendChild(b);
   });
-  var amt=document.getElementById("amt"), addbtn=document.getElementById("addbtn");
+  var amt=document.getElementById("amt"), addbtn=document.getElementById("addbtn"), dateSel=document.getElementById("dateSel");
   function checkAdd(){ addbtn.disabled=!(parseFloat(amt.value)>0 && sel); }
   amt.oninput=checkAdd;
+  dateSel.onchange=function(){ if(dateSel.value){ view=dateSel.value; render(); } };
   addbtn.onclick=function(){
     var v=parseFloat(amt.value); if(!(v>0)||!sel)return;
-    E.push({id:Date.now()+"-"+Math.random().toString(36).slice(2,6),ts:Date.now(),amount:v,cat:sel});
+    var now=today(), p=(view||dkey(now)).split("-");
+    var dt=new Date(+p[0],+p[1]-1,+p[2], now.getHours(),now.getMinutes(),now.getSeconds(),now.getMilliseconds());
+    E.push({id:Date.now()+"-"+Math.random().toString(36).slice(2,6),ts:dt.getTime(),amount:v,cat:sel});
     save("lm_exp",E);
     amt.value=""; sel=null; document.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on");});
     checkAdd(); render();
   };
 
-  // settings sheet
   var sheet=document.getElementById("sheet"), setLimit=document.getElementById("setLimit"), setRoll=document.getElementById("setRoll");
   document.getElementById("gear").onclick=function(){ setLimit.value=S.limit; setRoll.classList.toggle("on",S.roll); sheet.classList.add("open"); };
   setRoll.onclick=function(){ setRoll.classList.toggle("on"); };
@@ -248,7 +270,7 @@
     save("lm_settings",S); sheet.classList.remove("open"); render();
   };
   document.getElementById("reset").onclick=function(){
-    if(confirm("Удалить все траты и настройки? Это необратимо.")){ E=[]; S={limit:3000,roll:true}; save("lm_exp",E); save("lm_settings",S); sheet.classList.remove("open"); render(); }
+    if(confirm("Удалить все траты и настройки? Это необратимо.")){ E=[]; S={limit:3000,roll:true}; save("lm_exp",E); save("lm_settings",S); sheet.classList.remove("open"); view=null; render(); }
   };
   sheet.onclick=function(e){ if(e.target===sheet)sheet.classList.remove("open"); };
 
