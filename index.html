@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f0f0e">
+<meta name="theme-color" content="#1a1a18">
 <title>Qalta — трекер трат</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -23,7 +23,7 @@
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
     font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
   body{max-width:460px;margin:0 auto;padding:20px 16px calc(24px + env(safe-area-inset-bottom));min-height:100vh}
-  .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+  .top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
   .brand{font-size:20px;font-weight:600;letter-spacing:-.01em}
   .date{font-size:13px;color:var(--ink2);text-transform:capitalize;margin-top:2px}
   .gear{background:none;border:none;color:var(--ink3);font-size:20px;cursor:pointer;padding:6px;line-height:1}
@@ -37,6 +37,7 @@
   .fill{height:100%;border-radius:99px;transition:width .35s,background .3s}
   .pool{font-size:12.5px;color:var(--ink2);margin-top:10px}
   .pool b{color:var(--ink);font-weight:600}
+  .cheer{font-size:13px;color:var(--accent);margin-top:12px;min-height:17px;font-weight:500}
 
   .week{display:flex;gap:6px;margin:16px 2px 20px}
   .day{flex:1;text-align:center;background:none;border:none;padding:0;cursor:pointer}
@@ -74,6 +75,14 @@
   .mc .mv{font-size:19px;font-weight:600}
   .mc .ml{font-size:11px;color:var(--ink2);margin-top:3px}
 
+  .ach{margin-top:24px}
+  .ach h3{font-size:13px;color:var(--ink2);font-weight:500;margin:0 2px 14px;display:flex;justify-content:space-between}
+  .badges{display:grid;grid-template-columns:repeat(5,1fr);gap:14px 6px}
+  .badge{text-align:center;opacity:.28;filter:grayscale(1);transition:.2s;background:none;border:none;cursor:pointer;padding:0}
+  .badge.un{opacity:1;filter:none}
+  .badge .bi{font-size:25px;line-height:1.1}
+  .badge .bt{font-size:9.5px;color:var(--ink2);margin-top:4px;line-height:1.15;display:block}
+
   .sheet{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;z-index:10}
   .sheet.open{display:flex}
   .panel{background:var(--card);width:100%;max-width:460px;margin:0 auto;border-radius:20px 20px 0 0;padding:22px 18px calc(26px + env(safe-area-inset-bottom))}
@@ -85,8 +94,14 @@
   .sw.on{background:var(--accent)}
   .sw::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:99px;background:#fff;transition:.2s}
   .sw.on::after{left:22px}
+  .langs{display:flex;gap:6px}
+  .langs button{border:1px solid var(--line);background:transparent;border-radius:10px;padding:6px 10px;font-size:18px;cursor:pointer;line-height:1;opacity:.5;transition:.15s}
+  .langs button.on{opacity:1;border-color:var(--ink);background:var(--pool-bg)}
   .reset{width:100%;margin-top:16px;border:1px solid var(--red);color:var(--red);background:transparent;border-radius:12px;padding:12px;font-size:14px;cursor:pointer}
   .done{width:100%;margin-top:10px;border:none;background:var(--ink);color:var(--bg);border-radius:12px;padding:13px;font-size:15px;font-weight:600;cursor:pointer}
+
+  .toast{position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-24px);background:var(--ink);color:var(--bg);padding:11px 16px;border-radius:12px;font-size:13.5px;font-weight:600;opacity:0;pointer-events:none;transition:.3s;z-index:20;box-shadow:0 6px 20px rgba(0,0,0,.28);max-width:90%;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
 </head>
 <body>
@@ -98,70 +113,223 @@
   <div class="tagline">Ақшаң болса қалтаңда, талтаңда да талтаңда</div>
 
   <div class="hero">
-    <div class="lbl" id="heroLbl">Осталось сегодня</div>
+    <div class="lbl" id="heroLbl"></div>
     <div class="big" id="heroBig">—</div>
     <div class="of" id="heroOf"></div>
     <div class="track"><div class="fill" id="fill"></div></div>
     <div class="pool" id="pool"></div>
+    <div class="cheer" id="cheer"></div>
   </div>
 
   <div class="week" id="week"></div>
 
   <div class="add">
     <input class="amt" id="amt" type="number" inputmode="numeric" placeholder="0" min="0">
-    <div class="dayrow">День траты: <input type="date" id="dateSel"></div>
+    <div class="dayrow"><span id="lblDate">День траты:</span> <input type="date" id="dateSel"></div>
     <div class="cats" id="cats"></div>
     <button class="addbtn" id="addbtn" disabled>Добавить трату</button>
   </div>
 
   <div class="list">
-    <h3><span id="listTitle">Сегодня</span><span id="listSum"></span></h3>
+    <h3><span id="listTitle"></span><span id="listSum"></span></h3>
     <div id="rows"></div>
   </div>
 
   <div class="month" id="month"></div>
 
+  <div class="ach">
+    <h3><span id="achTitle">Достижения</span><span id="achCount"></span></h3>
+    <div class="badges" id="badges"></div>
+  </div>
+
   <div class="sheet" id="sheet">
     <div class="panel">
-      <h2>Настройки</h2>
-      <div class="frow"><label>Лимит в день, ₸</label><input type="number" id="setLimit" min="0" step="100"></div>
-      <div class="frow"><label>Переносить остаток<br><span style="font-size:12px;color:var(--ink2)">запас на следующий день недели</span></label><button class="sw" id="setRoll"></button></div>
+      <h2 id="setTitle">Настройки</h2>
+      <div class="frow"><label id="lblLimit">Лимит в день, ₸</label><input type="number" id="setLimit" min="0" step="100"></div>
+      <div class="frow"><label id="lblRoll"></label><button class="sw" id="setRoll"></button></div>
+      <div class="frow"><label id="lblLang">Язык</label>
+        <div class="langs" id="langs">
+          <button data-l="kk" aria-label="Қазақша">🇰🇿</button>
+          <button data-l="en" aria-label="English">🇬🇧</button>
+          <button data-l="ru" aria-label="Русский">🇷🇺</button>
+        </div>
+      </div>
       <button class="reset" id="reset">Очистить все данные</button>
       <button class="done" id="done">Готово</button>
     </div>
   </div>
 
+  <div class="toast" id="toast"></div>
+
 <script>
 (function(){
-  var CATS=[
-    {id:"food",  name:"Продукты", color:"#1f8f6a"},
-    {id:"cafe",  name:"Кафе",     color:"#b8791a"},
-    {id:"trans", name:"Транспорт",color:"#3a72c4"},
-    {id:"other", name:"Прочее",   color:"#8a8880"}
-  ];
+  var L={
+    ru:{ today_left:"Осталось сегодня",today_over:"Перерасход сегодня",left_on:"Осталось · ",over_on:"Перерасход · ",
+      of:"из ",reserve:" (с запасом +",reserve_end:")",behind:" (минус ",behind_end:" за неделю)",
+      week:"Неделя: осталось ",week_of:" из ",past_day:"Прошлый день — можно вносить траты задним числом",
+      day_of_spend:"День траты:",add:"Добавить трату",today:"Сегодня",
+      empty_today:"Пока нет трат. Первая покупка дня — выше.",empty_day:"В этот день трат нет. Можно добавить выше.",
+      m_month:"за месяц",m_avg:"в день (средн.)",m_top:"топ категория",
+      settings:"Настройки",s_limit:"Лимит в день, ₸",s_roll:"Переносить остаток",s_roll_sub:"запас на следующий день недели",s_lang:"Язык",reset:"Очистить все данные",done:"Готово",
+      confirm:"Удалить все траты и настройки? Это необратимо.",
+      cats:{food:"Продукты",cafe:"Кафе",trans:"Транспорт",other:"Прочее"},
+      days:["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],locale:"ru-RU",
+      ach:"Достижения",toast_new:"Новое достижение!",
+      cheer:{ over:["Бывает. Завтра начнём заново.","Перебор — не провал. Компенсируешь из недельного запаса.","Один день не рушит план."],
+        low:["Осталось немного — держи темп.","Финишная прямая на сегодня.","Почти у лимита — аккуратнее."],
+        good:["Хороший темп сегодня.","Всё под контролем.","Так держать — бюджет тебя слушается."],
+        streak:"{n} дней в лимите подряд 🔥" },
+      badges:{ first:{t:"Первый шаг",d:"Внёс первую трату"},streak3:{t:"3 дня",d:"3 дня подряд в лимите"},
+        streak7:{t:"Неделя",d:"7 дней подряд в лимите"},streak14:{t:"2 недели",d:"14 дней подряд в лимите"},
+        streak30:{t:"Месяц",d:"30 дней подряд в лимите"},days7:{t:"Привычка",d:"7 дней с записями"},
+        saver:{t:"Экономно",d:"День меньше половины лимита"},comeback:{t:"Возвращение",d:"В лимите сразу после перерасхода"},
+        weekwin:{t:"Конверт",d:"Уложился в недельный лимит"},nocafe:{t:"Без кафе",d:"Неделя без трат на кафе"} } },
+    en:{ today_left:"Left today",today_over:"Over budget today",left_on:"Left · ",over_on:"Over · ",
+      of:"of ",reserve:" (buffer +",reserve_end:")",behind:" (minus ",behind_end:" this week)",
+      week:"Week left: ",week_of:" of ",past_day:"Past day — you can add expenses retroactively",
+      day_of_spend:"Date:",add:"Add expense",today:"Today",
+      empty_today:"No expenses yet. Add your first above.",empty_day:"No expenses this day. Add above.",
+      m_month:"this month",m_avg:"per day (avg)",m_top:"top category",
+      settings:"Settings",s_limit:"Daily limit, ₸",s_roll:"Roll over balance",s_roll_sub:"buffer for the next day of the week",s_lang:"Language",reset:"Clear all data",done:"Done",
+      confirm:"Delete all expenses and settings? This cannot be undone.",
+      cats:{food:"Groceries",cafe:"Cafe",trans:"Transport",other:"Other"},
+      days:["Mon","Tue","Wed","Thu","Fri","Sat","Sun"],locale:"en-US",
+      ach:"Achievements",toast_new:"New badge!",
+      cheer:{ over:["It happens. Fresh start tomorrow.","Going over isn't failure. Cover it from the weekly buffer.","One day won't break the plan."],
+        low:["Almost at the limit — steady.","Home stretch for today.","Close to the cap — go easy."],
+        good:["Good pace today.","All under control.","Keep it up — the budget listens to you."],
+        streak:"{n} days in limit in a row 🔥" },
+      badges:{ first:{t:"First step",d:"Logged your first expense"},streak3:{t:"3 days",d:"3 days under limit in a row"},
+        streak7:{t:"A week",d:"7 days under limit in a row"},streak14:{t:"2 weeks",d:"14 days under limit in a row"},
+        streak30:{t:"A month",d:"30 days under limit in a row"},days7:{t:"Habit",d:"Logged expenses on 7 days"},
+        saver:{t:"Frugal",d:"A day under half the limit"},comeback:{t:"Comeback",d:"Under limit right after going over"},
+        weekwin:{t:"Envelope",d:"Finished a week within the weekly limit"},nocafe:{t:"No cafe",d:"A week with no cafe spend"} } },
+    kk:{ today_left:"Бүгін қалды",today_over:"Бүгін артық жұмсалды",left_on:"Қалды · ",over_on:"Артық · ",
+      of:"",reserve:" (қор +",reserve_end:")",behind:" (апта бойынша −",behind_end:")",
+      week:"Апта: қалды ",week_of:" / ",past_day:"Өткен күн — кейінгі күнмен енгізуге болады",
+      day_of_spend:"Күні:",add:"Шығын қосу",today:"Бүгін",
+      empty_today:"Әзірге шығын жоқ. Бірінші сатып алу — жоғарыда.",empty_day:"Бұл күні шығын жоқ. Жоғарыда қосуға болады.",
+      m_month:"айына",m_avg:"күніне (орт.)",m_top:"топ санат",
+      settings:"Баптаулар",s_limit:"Күндік лимит, ₸",s_roll:"Қалдықты ауыстыру",s_roll_sub:"келесі күнге қор",s_lang:"Тіл",reset:"Барлық деректі өшіру",done:"Дайын",
+      confirm:"Барлық шығын мен баптау өшірілсін бе? Қайтарылмайды.",
+      cats:{food:"Азық-түлік",cafe:"Дәмхана",trans:"Көлік",other:"Басқа"},
+      days:["Дс","Сс","Ср","Бс","Жм","Сб","Жс"],locale:"kk-KZ",
+      ach:"Жетістіктер",toast_new:"Жаңа жетістік!",
+      cheer:{ over:["Болады. Ертең қайта бастаймыз.","Асып кету — сәтсіздік емес. Апталық қордан жабасың.","Бір күн жоспарды бұзбайды."],
+        low:["Азғана қалды — темпті ұста.","Бүгінге финиш сызығы.","Лимитке жақын — абайла."],
+        good:["Бүгін темп жақсы.","Бәрі бақылауда.","Осылай ұста — бюджет бағынып тұр."],
+        streak:"{n} күн қатарынан лимитте 🔥" },
+      badges:{ first:{t:"Бірінші қадам",d:"Алғашқы шығынды енгіздің"},streak3:{t:"3 күн",d:"Қатарынан 3 күн лимитте"},
+        streak7:{t:"Апта",d:"Қатарынан 7 күн лимитте"},streak14:{t:"2 апта",d:"Қатарынан 14 күн лимитте"},
+        streak30:{t:"Ай",d:"Қатарынан 30 күн лимитте"},days7:{t:"Әдет",d:"7 күн жазба жүргіздің"},
+        saver:{t:"Үнемді",d:"Лимиттің жартысынан аз күн"},comeback:{t:"Оралу",d:"Артық жұмсаған соң лимитте"},
+        weekwin:{t:"Конверт",d:"Апталық лимитке сыйдың"},nocafe:{t:"Кафесіз",d:"Кафеге жұмсамай апта"} } }
+  };
+
+  var CATCOLORS={food:"#1f8f6a",cafe:"#b8791a",trans:"#3a72c4",other:"#8a8880"};
+  var CATIDS=["food","cafe","trans","other"];
+  var BADGES=["first","streak3","streak7","streak14","streak30","days7","saver","comeback","weekwin","nocafe"];
+  var BICON={first:"🌱",streak3:"🔥",streak7:"⭐",streak14:"💫",streak30:"🏆",days7:"📝",saver:"💰",comeback:"💪",weekwin:"✅",nocafe:"☕"};
+
   var mem={};
   function load(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return k in mem?mem[k]:d;}}
   function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){mem[k]=v;}}
 
   var S=load("lm_settings",{limit:3000,roll:true});
   var E=load("lm_exp",[]);
+  var lang=load("lm_lang","ru"); if(!L[lang])lang="ru";
+  var badgeStore=load("lm_badges",{});
+  var T=L[lang];
   var sel=null, view=null;
 
-  var fmt=new Intl.NumberFormat("ru-RU");
+  var fmt;
   function money(n){return fmt.format(Math.round(n))+" ₸";}
   function dkey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
   function today(){return new Date();}
   function weekStart(d){var x=new Date(d);var wd=(x.getDay()+6)%7;x.setDate(x.getDate()-wd);x.setHours(0,0,0,0);return x;}
-  function dispDate(key){return new Date(key+"T00:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long"});}
+  function dispDate(key){return new Date(key+"T00:00:00").toLocaleDateString(T.locale,{day:"numeric",month:"long"});}
   function spentOn(key){var s=0;E.forEach(function(e){if(dkey(new Date(e.ts))===key)s+=e.amount;});return s;}
+  function shiftKey(key,delta){var d=new Date(key+"T00:00:00");d.setDate(d.getDate()+delta);return dkey(d);}
   function state(rem){ if(rem<0)return"red"; if(rem<=S.limit*0.2)return"amber"; return"accent"; }
   function col(st){return st==="red"?"var(--red)":st==="amber"?"var(--amber)":"var(--accent)";}
+
+  function computeStats(){
+    var now=today(), tk=dkey(now);
+    if(!E.length) return {streak:0,cond:{}};
+    var dayMap={};
+    E.forEach(function(e){var k=dkey(new Date(e.ts)); if(!dayMap[k])dayMap[k]={total:0,cafe:0}; dayMap[k].total+=e.amount; if(e.cat==="cafe")dayMap[k].cafe+=e.amount;});
+    var firstKey=Object.keys(dayMap).sort()[0];
+    function under(k){return spentOn(k)<=S.limit;}
+    var streak=0, cur=tk;
+    if(spentOn(tk)>S.limit) cur=shiftKey(tk,-1);
+    while(cur>=firstKey && under(cur)){ streak++; cur=shiftKey(cur,-1); }
+    var over={}; Object.keys(dayMap).forEach(function(k){ if(dayMap[k].total>S.limit)over[k]=true; });
+    var saver=false, comeback=false;
+    Object.keys(dayMap).forEach(function(k){
+      var t=dayMap[k].total;
+      if(t>0 && t<=S.limit*0.5) saver=true;
+      if(t<=S.limit && over[shiftKey(k,-1)]) comeback=true;
+    });
+    var weekMap={};
+    Object.keys(dayMap).forEach(function(k){ var wk=dkey(weekStart(new Date(k+"T00:00:00"))); if(!weekMap[wk])weekMap[wk]={total:0,cafe:0}; weekMap[wk].total+=dayMap[k].total; weekMap[wk].cafe+=dayMap[k].cafe; });
+    var weekwin=false, nocafe=false;
+    Object.keys(weekMap).forEach(function(wk){ var sun=shiftKey(wk,6); if(sun<tk){ var w=weekMap[wk]; if(w.total>0&&w.total<=S.limit*7)weekwin=true; if(w.total>0&&w.cafe===0)nocafe=true; } });
+    return { streak:streak, cond:{
+      first:true, streak3:streak>=3, streak7:streak>=7, streak14:streak>=14, streak30:streak>=30,
+      days7:Object.keys(dayMap).length>=7, saver:saver, comeback:comeback, weekwin:weekwin, nocafe:nocafe
+    }};
+  }
+
+  var toastEl=document.getElementById("toast"), toastTimer;
+  function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("show"); clearTimeout(toastTimer); toastTimer=setTimeout(function(){toastEl.classList.remove("show");},2800); }
+
+  function applyLang(){
+    T=L[lang]; fmt=new Intl.NumberFormat(T.locale==="kk-KZ"?"ru-RU":T.locale);
+    document.documentElement.lang=lang;
+    document.getElementById("lblDate").textContent=T.day_of_spend;
+    document.getElementById("addbtn").textContent=T.add;
+    document.getElementById("setTitle").textContent=T.settings;
+    document.getElementById("lblLimit").textContent=T.s_limit;
+    document.getElementById("lblRoll").innerHTML=T.s_roll+'<br><span style="font-size:12px;color:var(--ink2)">'+T.s_roll_sub+'</span>';
+    document.getElementById("lblLang").textContent=T.s_lang;
+    document.getElementById("reset").textContent=T.reset;
+    document.getElementById("done").textContent=T.done;
+    document.getElementById("achTitle").textContent=T.ach;
+    document.querySelectorAll("#langs button").forEach(function(b){b.classList.toggle("on",b.dataset.l===lang);});
+    renderCats();
+  }
+
+  function renderCats(){
+    var wrap=document.getElementById("cats"); wrap.innerHTML="";
+    CATIDS.forEach(function(id){
+      var b=document.createElement("button"); b.className="cat"+(sel===id?" on":""); b.dataset.id=id;
+      b.innerHTML='<span class="dot" style="background:'+CATCOLORS[id]+'"></span>'+T.cats[id];
+      b.onclick=function(){ sel=id; document.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); checkAdd(); };
+      wrap.appendChild(b);
+    });
+  }
+
+  function renderBadges(cond){
+    var wrap=document.getElementById("badges"); wrap.innerHTML="";
+    var newly=[];
+    BADGES.forEach(function(id){ if(cond[id] && !badgeStore[id]){ badgeStore[id]=Date.now(); newly.push(id); } });
+    if(newly.length){ save("lm_badges",badgeStore); toast(T.toast_new+" "+T.badges[newly[0]].t); }
+    var got=0;
+    BADGES.forEach(function(id){
+      var un=!!badgeStore[id]; if(un)got++;
+      var b=document.createElement("button"); b.className="badge"+(un?" un":"");
+      b.innerHTML='<span class="bi">'+BICON[id]+'</span><span class="bt">'+T.badges[id].t+'</span>';
+      b.onclick=function(){ toast(T.badges[id].t+" — "+T.badges[id].d); };
+      wrap.appendChild(b);
+    });
+    document.getElementById("achCount").textContent=got+" / "+BADGES.length;
+  }
 
   function render(){
     var now=today(), tk=dkey(now);
     if(!view) view=tk;
     if(view>tk) view=tk;
-    document.getElementById("date").textContent=now.toLocaleDateString("ru-RU",{weekday:"long",day:"numeric",month:"long"});
+    document.getElementById("date").textContent=now.toLocaleDateString(T.locale,{weekday:"long",day:"numeric",month:"long"});
 
     var ws=weekStart(now), priorBudget=0, priorSpent=0;
     for(var i=0;i<7;i++){var d=new Date(ws);d.setDate(ws.getDate()+i);var k=dkey(d);
@@ -177,22 +345,26 @@
     var big=document.getElementById("heroBig");
     big.textContent=money(rem); big.style.color=col(st);
     document.getElementById("heroLbl").textContent=
-      isToday ? (rem<0?"Перерасход сегодня":"Осталось сегодня")
-              : (rem<0?"Перерасход · "+dispDate(view):"Осталось · "+dispDate(view));
-    document.getElementById("heroOf").textContent="из "+money(effLimit)+
-      ((isToday&&S.roll&&cushion!==0)?(cushion>0?" (с запасом +"+money(cushion)+")":" (минус "+money(-cushion)+" за неделю)"):"");
+      isToday ? (rem<0?T.today_over:T.today_left) : (rem<0?T.over_on+dispDate(view):T.left_on+dispDate(view));
+    document.getElementById("heroOf").textContent=T.of+money(effLimit)+
+      ((isToday&&S.roll&&cushion!==0)?(cushion>0?T.reserve+money(cushion)+T.reserve_end:T.behind+money(-cushion)+T.behind_end):"");
     var pct=Math.max(0,Math.min(100, effLimit>0?(vSpent/effLimit*100):100));
     var f=document.getElementById("fill"); f.style.width=pct+"%"; f.style.background=col(st);
 
     var wBudget=S.limit*7, wSpent=0;
     for(var wi=0;wi<7;wi++){var wd=new Date(ws);wd.setDate(ws.getDate()+wi);wSpent+=spentOn(dkey(wd));}
     var wLeft=wBudget-wSpent;
-    var poolEl=document.getElementById("pool");
-    if(!isToday){ poolEl.innerHTML="Прошлый день — можно вносить траты задним числом"; }
-    else { poolEl.innerHTML = "Неделя: осталось <b>"+money(wLeft)+"</b> из "+money(wBudget); }
+    document.getElementById("pool").innerHTML = isToday ? (T.week+"<b>"+money(wLeft)+"</b>"+T.week_of+money(wBudget)) : T.past_day;
+
+    var stats=computeStats();
+    var tSpentToday=spentOn(tk);
+    var arr = tSpentToday>S.limit? T.cheer.over : (tSpentToday>=S.limit*0.8? T.cheer.low : T.cheer.good);
+    var doy=Math.floor((now-new Date(now.getFullYear(),0,0))/864e5);
+    var msg=arr[doy%arr.length];
+    if(tSpentToday<S.limit*0.8 && stats.streak>=3) msg=T.cheer.streak.replace("{n}",stats.streak);
+    document.getElementById("cheer").textContent = isToday ? msg : "";
 
     var wk=document.getElementById("week"); wk.innerHTML="";
-    var names=["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
     for(var j=0;j<7;j++){
       (function(){
         var d2=new Date(ws);d2.setDate(ws.getDate()+j);var k2=dkey(d2);
@@ -202,7 +374,7 @@
         if(future){barCol="var(--pool-bg)";h=0;}
         var el=document.createElement("button");
         el.className="day"+(isT?" today":"")+(isSel?" sel":"");
-        el.innerHTML='<div class="bar"><div class="bin" style="height:'+h+'%;background:'+barCol+'"></div></div><div class="dl">'+names[j]+'</div>';
+        el.innerHTML='<div class="bar"><div class="bin" style="height:'+h+'%;background:'+barCol+'"></div></div><div class="dl">'+T.days[j]+'</div>';
         if(!future){ el.onclick=function(){ view=k2; render(); }; } else { el.disabled=true; el.style.opacity=".4"; }
         wk.appendChild(el);
       })();
@@ -213,16 +385,15 @@
 
     var rows=document.getElementById("rows");
     var vE=E.filter(function(e){return dkey(new Date(e.ts))===view;}).sort(function(a,b){return b.ts-a.ts;});
-    document.getElementById("listTitle").textContent=isToday?"Сегодня":dispDate(view);
+    document.getElementById("listTitle").textContent=isToday?T.today:dispDate(view);
     document.getElementById("listSum").textContent=vE.length?money(vSpent):"";
-    if(!vE.length){ rows.innerHTML='<div class="empty">'+(isToday?"Пока нет трат. Первая покупка дня — выше.":"В этот день трат нет. Можно добавить выше.")+'</div>'; }
+    if(!vE.length){ rows.innerHTML='<div class="empty">'+(isToday?T.empty_today:T.empty_day)+'</div>'; }
     else{
       rows.innerHTML="";
       vE.forEach(function(e){
-        var c=CATS.find(function(x){return x.id===e.cat;})||CATS[3];
-        var t=new Date(e.ts).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+        var t=new Date(e.ts).toLocaleTimeString(T.locale,{hour:"2-digit",minute:"2-digit"});
         var r=document.createElement("div"); r.className="row";
-        r.innerHTML='<span class="rdot" style="background:'+c.color+'"></span><div><div class="rcat">'+c.name+'</div><div class="rtime">'+t+'</div></div><span class="ramt">'+money(e.amount)+'</span><button class="del" aria-label="Удалить">✕</button>';
+        r.innerHTML='<span class="rdot" style="background:'+(CATCOLORS[e.cat]||CATCOLORS.other)+'"></span><div><div class="rcat">'+(T.cats[e.cat]||T.cats.other)+'</div><div class="rtime">'+t+'</div></div><span class="ramt">'+money(e.amount)+'</span><button class="del" aria-label="x">✕</button>';
         r.querySelector(".del").onclick=function(){ E=E.filter(function(x){return x.id!==e.id;}); save("lm_exp",E); render(); };
         rows.appendChild(r);
       });
@@ -234,20 +405,15 @@
     var days=now.getDate();
     var byCat={}; monthE.forEach(function(e){byCat[e.cat]=(byCat[e.cat]||0)+e.amount;});
     var topCat=Object.keys(byCat).sort(function(a,b){return byCat[b]-byCat[a];})[0];
-    var topName=topCat?(CATS.find(function(c){return c.id===topCat;})||{}).name:"—";
+    var topName=topCat?(T.cats[topCat]||"—"):"—";
     document.getElementById("month").innerHTML=
-      '<div class="mc"><div class="mv">'+money(mTotal)+'</div><div class="ml">за месяц</div></div>'+
-      '<div class="mc"><div class="mv">'+money(days?mTotal/days:0)+'</div><div class="ml">в день (средн.)</div></div>'+
-      '<div class="mc"><div class="mv" style="font-size:15px">'+topName+'</div><div class="ml">топ категория</div></div>';
+      '<div class="mc"><div class="mv">'+money(mTotal)+'</div><div class="ml">'+T.m_month+'</div></div>'+
+      '<div class="mc"><div class="mv">'+money(days?mTotal/days:0)+'</div><div class="ml">'+T.m_avg+'</div></div>'+
+      '<div class="mc"><div class="mv" style="font-size:15px">'+topName+'</div><div class="ml">'+T.m_top+'</div></div>';
+
+    renderBadges(stats.cond);
   }
 
-  var catsWrap=document.getElementById("cats");
-  CATS.forEach(function(c){
-    var b=document.createElement("button"); b.className="cat"; b.dataset.id=c.id;
-    b.innerHTML='<span class="dot" style="background:'+c.color+'"></span>'+c.name;
-    b.onclick=function(){ sel=c.id; document.querySelectorAll(".cat").forEach(function(x){x.classList.remove("on");}); b.classList.add("on"); checkAdd(); };
-    catsWrap.appendChild(b);
-  });
   var amt=document.getElementById("amt"), addbtn=document.getElementById("addbtn"), dateSel=document.getElementById("dateSel");
   function checkAdd(){ addbtn.disabled=!(parseFloat(amt.value)>0 && sel); }
   amt.oninput=checkAdd;
@@ -265,15 +431,19 @@
   var sheet=document.getElementById("sheet"), setLimit=document.getElementById("setLimit"), setRoll=document.getElementById("setRoll");
   document.getElementById("gear").onclick=function(){ setLimit.value=S.limit; setRoll.classList.toggle("on",S.roll); sheet.classList.add("open"); };
   setRoll.onclick=function(){ setRoll.classList.toggle("on"); };
+  document.querySelectorAll("#langs button").forEach(function(b){
+    b.onclick=function(){ lang=b.dataset.l; save("lm_lang",lang); applyLang(); render(); };
+  });
   document.getElementById("done").onclick=function(){
     var l=parseFloat(setLimit.value); if(l>0)S.limit=l; S.roll=setRoll.classList.contains("on");
     save("lm_settings",S); sheet.classList.remove("open"); render();
   };
   document.getElementById("reset").onclick=function(){
-    if(confirm("Удалить все траты и настройки? Это необратимо.")){ E=[]; S={limit:3000,roll:true}; save("lm_exp",E); save("lm_settings",S); sheet.classList.remove("open"); view=null; render(); }
+    if(confirm(T.confirm)){ E=[]; S={limit:3000,roll:true}; badgeStore={}; save("lm_exp",E); save("lm_settings",S); save("lm_badges",badgeStore); sheet.classList.remove("open"); view=null; render(); }
   };
   sheet.onclick=function(e){ if(e.target===sheet)sheet.classList.remove("open"); };
 
+  applyLang();
   render();
 })();
 </script>
