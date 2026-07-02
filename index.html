@@ -165,7 +165,7 @@
 
     var ws=weekStart(now), priorBudget=0, priorSpent=0;
     for(var i=0;i<7;i++){var d=new Date(ws);d.setDate(ws.getDate()+i);var k=dkey(d);
-      if(d<new Date(tk)){priorBudget+=S.limit;priorSpent+=spentOn(k);} }
+      if(dkey(d) < tk){priorBudget+=S.limit;priorSpent+=spentOn(k);} }
     var cushion=priorBudget-priorSpent;
 
     var isToday=view===tk;
@@ -196,7 +196,7 @@
     for(var j=0;j<7;j++){
       (function(){
         var d2=new Date(ws);d2.setDate(ws.getDate()+j);var k2=dkey(d2);
-        var sp=spentOn(k2), isT=k2===tk, future=d2>new Date(tk), isSel=k2===view;
+        var sp=spentOn(k2), isT=k2===tk, future=dkey(d2)>tk, isSel=k2===view;
         var ratio=Math.min(1.4, S.limit>0?sp/S.limit:0), h=Math.min(100,ratio*100);
         var barCol= sp>S.limit?"var(--red)": sp>S.limit*0.8?"var(--amber)":"var(--accent)";
         if(future){barCol="var(--pool-bg)";h=0;}
